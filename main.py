@@ -24,8 +24,8 @@ Why this line works against the judge's criteria, in order:
 
 The program writes the line to /output/entry.txt, creating the
 directory if needed, and validates it before writing:
-1-240 characters, a single line, UTF-8, not only whitespace, and
-no leading or trailing whitespace.
+1-240 characters, a single line, UTF-8, not only whitespace, no
+leading or trailing whitespace, and no control characters.
 """
 
 import os
@@ -56,6 +56,11 @@ def validate_line(text):
         raise ValueError("entry must not be only whitespace")
     if text != text.strip():
         raise ValueError("entry must not have leading or trailing whitespace")
+    # Control characters (other than none allowed here — the entry is a
+    # single printable line) would corrupt the judge's display of the
+    # text, so refuse them outright instead of trusting the gate.
+    if any(ord(ch) < 0x20 or ord(ch) == 0x7F for ch in text):
+        raise ValueError("entry must not contain control characters")
     # UTF-8 check: an entry that cannot encode as UTF-8 cannot pass the gate.
     text.encode("utf-8")
     return text
